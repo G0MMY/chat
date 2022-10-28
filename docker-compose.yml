@@ -1,0 +1,19 @@
+version: '2'
+services:
+  server:
+    build: .
+    environment:
+      - DB_HOST=db
+      - DB_NAME=chat
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PWD=postgres
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: chat
+    ports:
+      - "5432:5432"
