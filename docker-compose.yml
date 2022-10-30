@@ -7,7 +7,7 @@ services:
       - DB_NAME=chat
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PWD=postgres
+      - DB_PWD=password
     ports:
       - "8080:8080"
 
@@ -15,5 +15,6 @@ services:
     image: postgres
     environment:
       POSTGRES_DB: chat
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"

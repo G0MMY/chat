@@ -1,3 +1,6 @@
-FROM golang:1.16-alpine
+FROM alpine:3.16.2
 
-CMD ["/cmd/chat/main.go"]
+COPY ./sqlModel /sqlModel
+COPY ./dist/chat /usr/bin
+
+CMD ["/usr/bin/chat" ]
