@@ -14,5 +14,7 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 
 	router.HandleFunc("/user", userHandler.AddUser).Methods(http.MethodPost)
 
+	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
+
 	return router
 }

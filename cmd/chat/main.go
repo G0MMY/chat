@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	// change that
 	time.Sleep(5 * time.Second)
 	config := persistence.DbConfig{
 		Name: os.Getenv("DB_NAME"),

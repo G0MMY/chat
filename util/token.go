@@ -1,6 +1,8 @@
 package util
 
 import (
+	"io/ioutil"
+
 	"github.com/G0MMY/chat/model"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -13,8 +15,18 @@ type userClaims struct {
 func CreateToken(user *model.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodPS256.SigningMethodRSA, userClaims{Username: user.Username})
 
+	privateKey, err := ioutil.ReadFile("./rsa")
+	if err != nil {
+		return "", err
+	}
+
 	// change secret
-	signedToken, err := token.SignedString([]byte("test"))
+	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
+	if err != nil {
+		return "", err
+	}
+
+	signedToken, err := token.SignedString(key)
 	if err != nil {
 		return "", err
 	}
@@ -22,15 +34,38 @@ func CreateToken(user *model.User) (string, error) {
 	return signedToken, nil
 }
 
-func GetUsernameFromToken(tokenString string) (string, error) {
-	var claims *userClaims
+func ValidateToken(tokenString string) (bool, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		privateKey, err := ioutil.ReadFile("./rsa")
+		if err != nil {
+			return "", err
+		}
 
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("test"), nil
+		// change secret
+		key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
+		if err != nil {
+			return "", err
+		}
+
+		return key, nil
 	})
+
 	if err != nil {
-		return "", err
+		return false, err
 	}
 
-	return claims.Username, nil
+	return token.Valid, nil
 }
+
+// func GetUsernameFromToken(tokenString string) (string, error) {
+// 	var claims *userClaims
+
+// 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+// 		return []byte("test"), nil
+// 	})
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return claims.Username, nil
+// }
