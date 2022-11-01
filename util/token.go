@@ -8,12 +8,13 @@ import (
 )
 
 type userClaims struct {
+	Id       int    `json:"id"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
 func CreateToken(user *model.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodPS256.SigningMethodRSA, userClaims{Username: user.Username})
+	token := jwt.NewWithClaims(jwt.SigningMethodPS256.SigningMethodRSA, userClaims{Username: user.Username, Id: user.Id})
 
 	privateKey, err := ioutil.ReadFile("./rsa")
 	if err != nil {

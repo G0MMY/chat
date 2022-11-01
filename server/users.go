@@ -8,7 +8,6 @@ import (
 
 	"github.com/G0MMY/chat/model"
 	"github.com/G0MMY/chat/persistence"
-	"github.com/G0MMY/chat/util"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 )
@@ -51,6 +50,7 @@ func (h *userHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+// token doesn't work
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var body model.User
 
@@ -80,8 +80,6 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	fmt.Println(util.ValidateToken(token))
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
