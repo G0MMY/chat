@@ -2,14 +2,13 @@ package persistence
 
 import (
 	"context"
-	"errors"
 
 	"github.com/G0MMY/chat/model"
 	"github.com/go-playground/validator/v10"
 )
 
 type RoomStorable interface {
-	GetRoom(roomName string) (*model.Room, error)
+	GetRoomUsers(id string) (*model.Usernames, error)
 	AddRoom(room *model.Room) (*model.Room, error)
 	JoinRoom(joinRequest *model.JoinRequest) error
 }
@@ -41,36 +40,31 @@ func (s *roomStore) AddRoom(room *model.Room) (*model.Room, error) {
 	return room, nil
 }
 
-func (s *roomStore) GetRoom(roomName string) (*model.Room, error) {
-	if err := s.validate.Var(roomName, "required,alpha"); err != nil {
+func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {
+	if err := s.validate.Var(id, "required"); err != nil {
 		return nil, err
 	}
 
-	query := "SELECT id, name FROM rooms WHERE name=$1"
+	query := "SELECT username FROM rooms_users WHERE room_id=$1"
 
-	rows, err := s.connection.conn.Query(context.Background(), query, roomName)
+	rows, err := s.connection.conn.Query(context.Background(), query, id)
 	if err != nil {
 		return nil, err
 	}
 
-	var room *model.Room
+	var usernames model.Usernames
 	for rows.Next() {
-		if room != nil {
-			return nil, errors.New("duplicate rooms found")
-		}
-
-		var id int
 		var name string
 
-		err := rows.Scan(&id, &name)
+		err := rows.Scan(&name)
 		if err != nil {
 			return nil, err
 		}
 
-		room = &model.Room{Id: id, Name: name}
+		usernames.Names = append(usernames.Names, name)
 	}
 
-	return room, nil
+	return &usernames, nil
 }
 
 func (s *roomStore) JoinRoom(joinRequest *model.JoinRequest) error {
@@ -78,9 +72,9 @@ func (s *roomStore) JoinRoom(joinRequest *model.JoinRequest) error {
 		return err
 	}
 
-	query := "INSERT INTO rooms_users (room_id, user_id) VALUES ($1, $2)"
+	query := "INSERT INTO rooms_users (room_id, username) VALUES ($1, $2)"
 
-	_, err := s.connection.conn.Exec(context.Background(), query, joinRequest.RoomId, joinRequest.UserId)
+	_, err := s.connection.conn.Exec(context.Background(), query, joinRequest.RoomId, joinRequest.Username)
 	if err != nil {
 		return err
 	}

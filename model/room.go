@@ -6,6 +6,6 @@ type Room struct {
 }
 
 type JoinRequest struct {
-	UserId int `json:"userId" validate:"required,gt=0"`
-	RoomId int `json:"roomId" validate:"required,gt=0"`
+	Username string `json:"username" validate:"required,alpha"`
+	RoomId   int    `json:"roomId" validate:"required,gt=0"`
 }

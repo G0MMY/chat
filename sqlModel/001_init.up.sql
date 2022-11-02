@@ -13,10 +13,10 @@ CREATE TABLE IF NOT EXISTS rooms(
 
 CREATE TABLE IF NOT EXISTS rooms_users(
    room_id int NOT NULL,
-   user_id int NOT NULL,
+   username VARCHAR (50) NOT NULL,
    CONSTRAINT fk_room FOREIGN KEY(room_id) REFERENCES rooms(id),
-   CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id),
-   UNIQUE (room_id, user_id)
+   CONSTRAINT fk_username FOREIGN KEY(username) REFERENCES users(username),
+   UNIQUE (room_id, username)
 );
 
 CREATE TABLE IF NOT EXISTS invitations(
@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS invitations(
    room_id int NOT NULL,
    CONSTRAINT fk_room FOREIGN KEY(room_id) REFERENCES rooms(id),
    CONSTRAINT fk_sender FOREIGN KEY(sender) REFERENCES users(username),
-   CONSTRAINT fk_receiver FOREIGN KEY(receiver) REFERENCES users(username)
+   CONSTRAINT fk_receiver FOREIGN KEY(receiver) REFERENCES users(username),
+   UNIQUE (sender, receiver, room_id)
 );
 
 CREATE TABLE IF NOT EXISTS messages(
