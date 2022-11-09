@@ -8,5 +8,5 @@ type User struct {
 }
 
 type Usernames struct {
-	Names []string `json:"names"`
+	Items []string `json:"items"`
 }

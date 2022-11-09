@@ -61,7 +61,7 @@ func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {
 			return nil, err
 		}
 
-		usernames.Names = append(usernames.Names, name)
+		usernames.Items = append(usernames.Items, name)
 	}
 
 	return &usernames, nil

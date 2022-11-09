@@ -11,6 +11,7 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 	userHandler := userHandler{store: persistence.NewUserStore(conn)}
 	roomHandler := roomHandler{store: persistence.NewRoomStore(conn)}
 	invitationHandler := invitationHandler{store: persistence.NewInvitationStore(conn)}
+	messageHandler := messageHandler{store: persistence.NewMessageStore(conn)}
 
 	router := mux.NewRouter()
 
@@ -26,6 +27,10 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 	// invitation routes
 	router.HandleFunc("/invitation", invitationHandler.AddInvitation).Methods(http.MethodPost)
 	router.HandleFunc("/invitation/{username}", invitationHandler.GetInvitationsOfUser).Methods(http.MethodGet)
+
+	// message routes
+	router.HandleFunc("/message", messageHandler.AddMessage).Methods(http.MethodPost)
+	router.HandleFunc("/message/{roomId}", messageHandler.GetMessages).Methods(http.MethodGet)
 
 	return router
 }

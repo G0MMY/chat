@@ -1,33 +1,30 @@
 package util
 
 import (
-	"io/ioutil"
+	"time"
 
 	"github.com/G0MMY/chat/model"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type userClaims struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
-	jwt.RegisteredClaims
+	jwt.StandardClaims
 }
 
 func CreateToken(user *model.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodPS256.SigningMethodRSA, userClaims{Username: user.Username, Id: user.Id})
-
-	privateKey, err := ioutil.ReadFile("./rsa")
-	if err != nil {
-		return "", err
+	claims := &userClaims{
+		Username: user.Username,
+		Id:       user.Id,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+		},
 	}
 
-	// change secret
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
-	if err != nil {
-		return "", err
-	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := token.SignedString(key)
+	signedToken, err := token.SignedString([]byte("test"))
 	if err != nil {
 		return "", err
 	}
@@ -36,19 +33,10 @@ func CreateToken(user *model.User) (string, error) {
 }
 
 func ValidateToken(tokenString string) (bool, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		privateKey, err := ioutil.ReadFile("./rsa")
-		if err != nil {
-			return "", err
-		}
+	claims := &userClaims{}
 
-		// change secret
-		key, err := jwt.ParseRSAPrivateKeyFromPEM(privateKey)
-		if err != nil {
-			return "", err
-		}
-
-		return key, nil
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("test"), nil
 	})
 
 	if err != nil {
@@ -58,15 +46,15 @@ func ValidateToken(tokenString string) (bool, error) {
 	return token.Valid, nil
 }
 
-// func GetUsernameFromToken(tokenString string) (string, error) {
-// 	var claims *userClaims
+func GetInfoFromToken(tokenString string) (string, int, error) {
+	claims := &userClaims{}
 
-// 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte("test"), nil
-// 	})
-// 	if err != nil {
-// 		return "", err
-// 	}
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("test"), nil
+	})
+	if err != nil {
+		return "", 0, err
+	}
 
-// 	return claims.Username, nil
-// }
+	return claims.Username, claims.Id, nil
+}
