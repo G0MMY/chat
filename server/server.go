@@ -15,22 +15,30 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 
 	router := mux.NewRouter()
 
+	roomRouter := router.PathPrefix("/room").Subrouter()
+	invitationRouter := router.PathPrefix("/invitation").Subrouter()
+	messageRouter := router.PathPrefix("/message").Subrouter()
+
+	roomRouter.Use(Authentication)
+	invitationRouter.Use(Authentication)
+	messageRouter.Use(Authentication)
+
 	// user routes
 	router.HandleFunc("/user", userHandler.AddUser).Methods(http.MethodPost)
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
 
 	// room routes
-	router.HandleFunc("/room", roomHandler.AddRoom).Methods(http.MethodPost)
-	router.HandleFunc("/room/{id}", roomHandler.GetRoomUsers).Methods(http.MethodGet)
-	router.HandleFunc("/room/join", roomHandler.JoinRoom).Methods(http.MethodPost)
+	roomRouter.HandleFunc("", roomHandler.AddRoom).Methods(http.MethodPost)
+	roomRouter.HandleFunc("/{id}", roomHandler.GetRoomUsers).Methods(http.MethodGet)
+	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodPost)
 
 	// invitation routes
-	router.HandleFunc("/invitation", invitationHandler.AddInvitation).Methods(http.MethodPost)
-	router.HandleFunc("/invitation/{username}", invitationHandler.GetInvitationsOfUser).Methods(http.MethodGet)
+	invitationRouter.HandleFunc("", invitationHandler.AddInvitation).Methods(http.MethodPost)
+	invitationRouter.HandleFunc("/{username}", invitationHandler.GetInvitationsOfUser).Methods(http.MethodGet)
 
 	// message routes
-	router.HandleFunc("/message", messageHandler.AddMessage).Methods(http.MethodPost)
-	router.HandleFunc("/message/{roomId}", messageHandler.GetMessages).Methods(http.MethodGet)
+	messageRouter.HandleFunc("", messageHandler.AddMessage).Methods(http.MethodPost)
+	messageRouter.HandleFunc("/{roomId}", messageHandler.GetMessages).Methods(http.MethodGet)
 
 	return router
 }

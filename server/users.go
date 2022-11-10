@@ -50,7 +50,6 @@ func (h *userHandler) AddUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// token doesn't work
 func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var body model.User
 
