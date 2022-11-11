@@ -1,0 +1,28 @@
+body {
+    margin: 0
+}
+
+.centerDiv {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.flexColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.clickLink {
+    text-decoration: underline;
+    cursor: pointer;
+    color: blue;
+}
+
+.errorMessage {
+    color: red;
+    padding: 10px;
+}

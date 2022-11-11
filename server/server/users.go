@@ -9,7 +9,6 @@ import (
 	"github.com/G0MMY/chat/model"
 	"github.com/G0MMY/chat/persistence"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
 )
 
 type userHandler struct {
@@ -67,17 +66,10 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := h.store.Login(&body)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(err.Error())
-			return
-		} else {
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(err.Error())
-			return
-		}
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err.Error())
+		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
