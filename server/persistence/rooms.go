@@ -11,6 +11,7 @@ type RoomStorable interface {
 	GetRoomUsers(id string) (*model.Usernames, error)
 	AddRoom(room *model.Room) (*model.Room, error)
 	JoinRoom(joinRequest *model.JoinRequest) error
+	GetUserRooms(username string) (*model.Rooms, error)
 }
 
 type roomStore struct {
@@ -38,6 +39,34 @@ func (s *roomStore) AddRoom(room *model.Room) (*model.Room, error) {
 	room.Id = id
 
 	return room, nil
+}
+
+func (s *roomStore) GetUserRooms(username string) (*model.Rooms, error) {
+	if err := s.validate.Var(username, "required,alpha"); err != nil {
+		return nil, err
+	}
+
+	query := "SELECT id, name FROM rooms INNER JOIN rooms_users ON rooms.id=rooms_users.room_id WHERE username=$1"
+
+	rows, err := s.connection.conn.Query(context.Background(), query, username)
+	if err != nil {
+		return nil, err
+	}
+
+	var rooms *model.Rooms
+	for rows.Next() {
+		var id int
+		var name string
+
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			return nil, err
+		}
+
+		rooms.Items = append(rooms.Items, model.Room{Id: id, Name: name})
+	}
+
+	return rooms, nil
 }
 
 func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {

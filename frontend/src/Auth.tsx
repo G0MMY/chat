@@ -39,8 +39,10 @@ export default function Auth() {
             }
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
-            //store jwt token
-            navigate('/rooms')
+            sessionStorage.setItem('Token', data)
+            navigate('/rooms', {
+                state: {username: username}
+            })
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -65,7 +67,7 @@ export default function Auth() {
                 return resp.json();
             }
             return resp.text().then(text => { throw new Error(text) })
-        }).then((data) => {
+        }).then(() => {
             loginApp();
         }).catch((err: Error) => {
             setError(true);

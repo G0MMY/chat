@@ -15,9 +15,9 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 
 	router := mux.NewRouter()
 
-	roomRouter := router.PathPrefix("/room").Subrouter()
-	invitationRouter := router.PathPrefix("/invitation").Subrouter()
-	messageRouter := router.PathPrefix("/message").Subrouter()
+	roomRouter := router.PathPrefix("/rooms").Subrouter()
+	invitationRouter := router.PathPrefix("/invitations").Subrouter()
+	messageRouter := router.PathPrefix("/messages").Subrouter()
 
 	roomRouter.Use(Authentication)
 	invitationRouter.Use(Authentication)
@@ -26,9 +26,11 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 	// user routes
 	router.HandleFunc("/user", userHandler.AddUser).Methods(http.MethodPost)
 	router.HandleFunc("/login", userHandler.Login).Methods(http.MethodPost)
+	router.HandleFunc("/validate", ValidateToken).Methods(http.MethodGet)
 
 	// room routes
 	roomRouter.HandleFunc("", roomHandler.AddRoom).Methods(http.MethodPost)
+	roomRouter.HandleFunc("", roomHandler.GetUserRomms).Methods(http.MethodGet)
 	roomRouter.HandleFunc("/{id}", roomHandler.GetRoomUsers).Methods(http.MethodGet)
 	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodPost)
 

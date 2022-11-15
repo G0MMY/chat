@@ -8,6 +8,7 @@ import (
 
 	"github.com/G0MMY/chat/model"
 	"github.com/G0MMY/chat/persistence"
+	"github.com/G0MMY/chat/util"
 	"github.com/jackc/pgconn"
 )
 
@@ -75,4 +76,33 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(token)
+}
+
+func ValidateToken(w http.ResponseWriter, r *http.Request) {
+	parameters := r.URL.Query()
+
+	if tokens, ok := parameters["Token"]; !ok {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("you need to pass the Token parameter in the query")
+	} else {
+		for _, token := range tokens {
+			valid, err := util.ValidateToken(token)
+			if err != nil {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(err.Error())
+				return
+			}
+			if !valid {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode("invalid token: " + token)
+				return
+			}
+		}
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

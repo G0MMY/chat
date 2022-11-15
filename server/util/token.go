@@ -41,6 +41,8 @@ func ValidateToken(tokenString string) (bool, error) {
 
 	if err != nil {
 		return false, err
+	} else if claims.ExpiresAt < time.Now().Unix() {
+		return false, nil
 	}
 
 	return token.Valid, nil

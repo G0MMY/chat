@@ -98,3 +98,31 @@ func (h *roomHandler) GetRoomUsers(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(room)
 }
+
+func (h *roomHandler) GetUserRomms(w http.ResponseWriter, r *http.Request) {
+	parameters := r.URL.Query()
+
+	if usernames, ok := parameters["username"]; !ok {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("you need to pass the username parameter in the query")
+	} else {
+		if len(usernames) > 1 {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode("too many usernames provided")
+			return
+		}
+		rooms, err := h.store.GetUserRooms(usernames[0])
+		if err != nil {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(rooms)
+	}
+}

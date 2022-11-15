@@ -9,3 +9,7 @@ type JoinRequest struct {
 	Username string `json:"username" validate:"required,alpha"`
 	RoomId   int    `json:"roomId" validate:"required,gt=0"`
 }
+
+type Rooms struct {
+	Items []Room `json:"items"`
+}
