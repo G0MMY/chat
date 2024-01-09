@@ -26,3 +26,24 @@ body {
     color: red;
     padding: 10px;
 }
+
+.welcomeTitle{
+    height: 35%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.restTitle{
+    height: 65%;
+}
+
+.page{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}

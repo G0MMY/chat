@@ -1,10 +1,12 @@
 import { Button, TextField } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import RoomList from "./RoomList";
+import RoomMessages from "./RoomMessages";
 
-interface Room {
+export interface Room {
     id: number
-    name: number
+    name: string
 }
 
 export default function Rooms() {
@@ -16,6 +18,7 @@ export default function Rooms() {
     const [errorMessage, setErrorMessage] = useState('');
     const [roomName, setRoomName] = useState('');
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [selectedRoom, setSelectedRoom] = useState<Room>();
 
     const getRooms = (currentToken?: string) => {
         const requestOptions = {
@@ -31,32 +34,8 @@ export default function Rooms() {
             }
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
-            console.log("t")
-           console.log(data)
-        }).catch((err: Error) => {
-            setError(true);
-            setErrorMessage(err.message);
-        });
-    }
-
-    const createRoom = () => {
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-type": "application/json",
-                "Token": token
-            },
-            body: JSON.stringify({
-                name: roomName
-            })
-        };
-        fetch('/rooms', requestOptions).then((resp) => {
-            if (resp.ok) {
-                return resp.json();
-            }
-            return resp.text().then(text => { throw new Error(text) })
-        }).then((data) => {
-            joinRoom(data.id)
+            setError(false);
+            setRooms(data.items !== null? data.items : []);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -81,7 +60,10 @@ export default function Rooms() {
             }
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
-            // add to rooms
+            setError(false);
+            const temp = rooms;
+            temp.push(data)
+            setRooms(temp);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -105,15 +87,22 @@ export default function Rooms() {
     }, [])
 
     return (
-        <div>
-            <h1>Welcome {username}</h1>
-            {error? errorMessage: ''}
-            <div>
-                <TextField label='Room Name' onChange={(e)=> {
-                    setRoomName(e.currentTarget.value);
-                }}/>
-                <Button variant='contained' onClick={createRoom}>Create Room</Button>
-            </div>
+        <div style={{display:"flex"}}>
+            <RoomList rooms={rooms}/>
+            <RoomMessages room={selectedRoom}/>
         </div>
+        // <div className="flexColumn">
+        //     {/* <div style={{display: 'flex', justifyContent: 'center'}}>
+        //         <TextField label='Room Name' onChange={(e)=> {
+        //             setRoomName(e.currentTarget.value);
+        //         }}/>
+        //         <Button variant='contained' onClick={createRoom}>Create Room</Button>
+        //     </div> */}
+        //     {error? errorMessage: ''}
+        //     <div>
+        //         <RoomList rooms={rooms}/>
+        //         <RoomMessages room={selectedRoom}/>
+        //     </div>
+        // </div>
     )
 }

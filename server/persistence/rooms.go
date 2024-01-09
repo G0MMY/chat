@@ -10,7 +10,7 @@ import (
 type RoomStorable interface {
 	GetRoomUsers(id string) (*model.Usernames, error)
 	AddRoom(room *model.Room) (*model.Room, error)
-	JoinRoom(joinRequest *model.JoinRequest) error
+	JoinRoom(joinRequest *model.JoinRequest) (*model.Room, error)
 	GetUserRooms(username string) (*model.Rooms, error)
 }
 
@@ -53,7 +53,7 @@ func (s *roomStore) GetUserRooms(username string) (*model.Rooms, error) {
 		return nil, err
 	}
 
-	var rooms *model.Rooms
+	var rooms model.Rooms
 	for rows.Next() {
 		var id int
 		var name string
@@ -66,7 +66,7 @@ func (s *roomStore) GetUserRooms(username string) (*model.Rooms, error) {
 		rooms.Items = append(rooms.Items, model.Room{Id: id, Name: name})
 	}
 
-	return rooms, nil
+	return &rooms, nil
 }
 
 func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {
@@ -96,17 +96,34 @@ func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {
 	return &usernames, nil
 }
 
-func (s *roomStore) JoinRoom(joinRequest *model.JoinRequest) error {
+func (s *roomStore) GetRoom(id int) (*model.Room, error) {
+	if err := s.validate.Var(id, "required"); err != nil {
+		return nil, err
+	}
+
+	var roomId int
+	var name string
+	query := "SELECT id, name FROM rooms WHERE id=$1"
+
+	err := s.connection.conn.QueryRow(context.Background(), query, id).Scan(&roomId, &name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Room{Id: roomId, Name: name}, nil
+}
+
+func (s *roomStore) JoinRoom(joinRequest *model.JoinRequest) (*model.Room, error) {
 	if err := s.validate.Struct(joinRequest); err != nil {
-		return err
+		return nil, err
 	}
 
 	query := "INSERT INTO rooms_users (room_id, username) VALUES ($1, $2)"
 
 	_, err := s.connection.conn.Exec(context.Background(), query, joinRequest.RoomId, joinRequest.Username)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return s.GetRoom(joinRequest.RoomId)
 }

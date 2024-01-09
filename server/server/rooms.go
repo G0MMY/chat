@@ -57,7 +57,7 @@ func (h *roomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	err := h.store.JoinRoom(&body)
+	room, err := h.store.JoinRoom(&body)
 	if err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -67,7 +67,7 @@ func (h *roomHandler) JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode("joined room")
+	json.NewEncoder(w).Encode(room)
 }
 
 func (h *roomHandler) GetRoomUsers(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,7 @@ func (h *roomHandler) GetRoomUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(room)
 }
 
-func (h *roomHandler) GetUserRomms(w http.ResponseWriter, r *http.Request) {
+func (h *roomHandler) GetUserRooms(w http.ResponseWriter, r *http.Request) {
 	parameters := r.URL.Query()
 
 	if usernames, ok := parameters["username"]; !ok {

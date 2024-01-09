@@ -77,33 +77,51 @@ export default function Auth() {
 
     if (login) {
         return (
-            <div className="centerDiv flexColumn">
-                <TextField label='Username or Email' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                    setUsername(e.currentTarget.value)}
-                }/>
-                <TextField label='Password' style={{marginTop: '10px'}} type='password' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                    setPwd(e.currentTarget.value)}
-                }/>
-                <Button variant='contained' style={{marginTop: '20px'}} onClick={loginApp}>Login</Button>
-                {error? <div className='errorMessage'>{errorMessage.substring(1, errorMessage.length-2)}</div>:<></>}
-                <div style={{marginTop: '20px'}}>You don't have an account? <a className="clickLink" onClick={changeLogin}>Sign up here</a></div>
+            <div className="page">
+                <div className="welcomeTitle">
+                    <h1 style={{fontSize: "50px"}}> Welcome to WeChat </h1>
+                    <h3> The best chat application on the market </h3> 
+                </div>
+                <div className="restTitle">
+                    <div className="flexColumn">
+                        <h1>Login</h1>
+                        <TextField label='Username or Email' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            setUsername(e.currentTarget.value)}
+                        }/>
+                        <TextField label='Password' style={{marginTop: '10px'}} type='password' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            setPwd(e.currentTarget.value)}
+                        }/>
+                        <Button variant='contained' style={{marginTop: '20px'}} onClick={loginApp}>Login</Button>
+                        {error? <div className='errorMessage'>{errorMessage.substring(1, errorMessage.length-2)}</div>:<></>}
+                        <div style={{marginTop: '20px'}}>You don't have an account? <a className="clickLink" onClick={changeLogin}>Sign up here</a></div>
+                    </div>
+                </div>
             </div>
         )
     }
     return (
-        <div className="centerDiv flexColumn">
-            <TextField label='Email'onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                    setEmail(e.currentTarget.value)}
-                }/>
-            <TextField label='Username' style={{marginTop: '10px'}}onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                    setUsername(e.currentTarget.value)}
-                }/>
-            <TextField label='Password' style={{marginTop: '10px'}} type='password' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-                    setPwd(e.currentTarget.value)}
-                }/>
-            <Button variant='contained' style={{marginTop: '20px'}} onClick={signUpApp}>Sign up</Button>
-            {error? <div className='errorMessage'>{errorMessage.substring(1, errorMessage.length-2)}</div>:<></>}
-            <div style={{marginTop: '20px'}}>You already have an account? <a className="clickLink" onClick={changeLogin}>Login here</a></div>
+        <div className="page">
+            <div className="welcomeTitle">
+                <h1 style={{fontSize: "50px"}}> Welcome to WeChat </h1>
+                <h3> The best chat application on the market </h3> 
+            </div>
+            <div className="restTitle">
+                <div className="flexColumn">
+                    <h1>Sign Up</h1>
+                    <TextField label='Email'onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            setEmail(e.currentTarget.value)}
+                        }/>
+                    <TextField label='Username' style={{marginTop: '10px'}}onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            setUsername(e.currentTarget.value)}
+                        }/>
+                    <TextField label='Password' style={{marginTop: '10px'}} type='password' onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                            setPwd(e.currentTarget.value)}
+                        }/>
+                    <Button variant='contained' style={{marginTop: '20px'}} onClick={signUpApp}>Sign up</Button>
+                    {error? <div className='errorMessage'>{errorMessage.substring(1, errorMessage.length-2)}</div>:<></>}
+                    <div style={{marginTop: '20px'}}>You already have an account? <a className="clickLink" onClick={changeLogin}>Login here</a></div>
+                </div>
+            </div>
         </div>
     )
 }

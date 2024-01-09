@@ -30,7 +30,7 @@ func CreateRoutes(conn *persistence.Connection) *mux.Router {
 
 	// room routes
 	roomRouter.HandleFunc("", roomHandler.AddRoom).Methods(http.MethodPost)
-	roomRouter.HandleFunc("", roomHandler.GetUserRomms).Methods(http.MethodGet)
+	roomRouter.HandleFunc("", roomHandler.GetUserRooms).Methods(http.MethodGet)
 	roomRouter.HandleFunc("/{id}", roomHandler.GetRoomUsers).Methods(http.MethodGet)
 	roomRouter.HandleFunc("/join", roomHandler.JoinRoom).Methods(http.MethodPost)
 
