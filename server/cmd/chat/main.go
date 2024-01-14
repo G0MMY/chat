@@ -27,9 +27,10 @@ func main() {
 		return
 	}
 
-	routes, websocketRoomHandler := server.CreateRoutes(conn)
+	routes, websocketRoomHandler, websocketInvitationHandler := server.CreateRoutes(conn)
 
 	go websocketRoomHandler.HandleMessages()
+	go websocketInvitationHandler.HandleInvitations()
 
 	log.Println("running")
 	log.Fatal(http.ListenAndServe(":8080", routes))

@@ -47,3 +47,15 @@ body {
     flex-direction: column;
     height: 100vh;
 }
+
+.hide {
+    display: none;
+}
+      
+.message:hover > .hide {
+    display: block;
+}
+
+.message:hover + .hide {
+    display: block;
+}

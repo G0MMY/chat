@@ -7,7 +7,7 @@ import (
 	"github.com/G0MMY/chat/util"
 )
 
-func Authentication(h http.Handler) http.Handler {
+func authentication(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header["Token"]
 

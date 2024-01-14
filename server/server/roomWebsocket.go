@@ -25,7 +25,7 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 	if !ok {
 		rw.Header().Add("Content-Type", "application/json")
 		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode("invalid id provided")
+		json.NewEncoder(rw).Encode("invalid username provided")
 		return
 	}
 
@@ -39,9 +39,7 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 
 	conn, err := w.upgrader.Upgrade(rw, r, nil)
 	if err != nil {
-		rw.Header().Add("Content-Type", "application/json")
-		rw.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rw).Encode(err.Error())
+		fmt.Println(err)
 		return
 	}
 	defer conn.Close()
@@ -53,10 +51,9 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 	for {
 		var msg model.Message
 		err := conn.ReadJSON(&msg)
+		fmt.Println(msg)
 		if err != nil {
-			rw.Header().Add("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rw).Encode(err.Error())
+			fmt.Println(err)
 
 			for _, room := range rooms.Items {
 				if len(w.clientRooms[room.Id]) == 1 {
@@ -75,9 +72,7 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 
 		_, err = w.messageStore.AddMessage(&msg)
 		if err != nil {
-			rw.Header().Add("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rw).Encode(err.Error())
+			fmt.Println(err)
 			return
 		}
 

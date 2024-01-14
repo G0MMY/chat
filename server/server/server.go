@@ -9,19 +9,27 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func CreateRoutes(conn *persistence.Connection) (*mux.Router, websocketRoomHandler) {
+func CreateRoutes(conn *persistence.Connection) (*mux.Router, websocketRoomHandler, websocketInvitationHandler) {
 	roomStore := persistence.NewRoomStore(conn)
 	messageStore := persistence.NewMessageStore(conn)
+	invitationStore := persistence.NewInvitationStore(conn)
+
 	userHandler := userHandler{store: persistence.NewUserStore(conn)}
 	roomHandler := roomHandler{store: roomStore}
-	invitationHandler := invitationHandler{store: persistence.NewInvitationStore(conn)}
+	invitationHandler := invitationHandler{store: invitationStore}
 	messageHandler := messageHandler{store: messageStore}
 	websocketRoomHandler := websocketRoomHandler{
 		roomStore:    roomStore,
 		messageStore: messageStore,
-		upgrader:     websocket.Upgrader{},
+		upgrader:     websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
 		clientRooms:  make(map[int][]*websocket.Conn),
 		messages:     make(chan model.Message),
+	}
+	websocketInvitationHandler := websocketInvitationHandler{
+		invitationStore:   invitationStore,
+		upgrader:          websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		clientInvitations: make(map[string]*websocket.Conn),
+		invitations:       make(chan model.Invitation),
 	}
 
 	router := mux.NewRouter()
@@ -31,10 +39,10 @@ func CreateRoutes(conn *persistence.Connection) (*mux.Router, websocketRoomHandl
 	messageRouter := router.PathPrefix("/messages").Subrouter()
 	websocketRouter := router.PathPrefix("/ws").Subrouter()
 
-	roomRouter.Use(Authentication)
-	invitationRouter.Use(Authentication)
-	messageRouter.Use(Authentication)
-	websocketRouter.Use(Authentication)
+	roomRouter.Use(authentication)
+	invitationRouter.Use(authentication)
+	messageRouter.Use(authentication)
+	//websocketRouter.Use(authentication)
 
 	// user routes
 	router.HandleFunc("/user", userHandler.AddUser).Methods(http.MethodPost)
@@ -57,6 +65,7 @@ func CreateRoutes(conn *persistence.Connection) (*mux.Router, websocketRoomHandl
 
 	// websocket routes
 	websocketRouter.HandleFunc("/rooms/{username}", websocketRoomHandler.handleConnections).Methods(http.MethodGet)
+	websocketRouter.HandleFunc("/invitations/{username}", websocketInvitationHandler.handleConnections).Methods(http.MethodGet)
 
-	return router, websocketRoomHandler
+	return router, websocketRoomHandler, websocketInvitationHandler
 }
