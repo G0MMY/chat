@@ -5,4 +5,5 @@ type Invitation struct {
 	Sender   string `json:"sender" validate:"required,alpha"`
 	Receiver string `json:"receiver" validate:"required,alpha"`
 	RoomId   int    `json:"roomId" validate:"required,gt=0"`
+	RoomName string `json:"roomName" validate:"alpha"`
 }

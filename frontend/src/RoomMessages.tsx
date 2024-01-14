@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { Room } from "./Rooms";
+import { useNavigate } from "react-router-dom";
 
-export default function RoomMessages(props: { room?: Room }) {
+interface Props {
+    room: Room
+}
+
+export default function RoomMessages({ room: Room }:Props) {
+
     return (
-        <div>
+        <div style={{width:'100%'}}>
             
+            <div>
+
+            </div>
         </div>
     )
 }

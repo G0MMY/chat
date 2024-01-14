@@ -44,7 +44,7 @@ func (s *invitationStore) GetInvitationsOfUser(username string) ([]model.Invitat
 		return nil, err
 	}
 
-	query := "SELECT id,sender,receiver,room_id FROM invitations WHERE receiver=$1"
+	query := "SELECT i.id,i.sender,i.receiver,i.room_id,r.name FROM invitations as i JOIN rooms as r ON i.room_id=r.id WHERE receiver=$1"
 
 	rows, err := s.connection.conn.Query(context.Background(), query, username)
 	if err != nil {
@@ -54,14 +54,14 @@ func (s *invitationStore) GetInvitationsOfUser(username string) ([]model.Invitat
 	var invitations []model.Invitation
 	for rows.Next() {
 		var id, roomId int
-		var sender, receiver string
+		var sender, receiver, roomName string
 
-		err := rows.Scan(&id, &sender, &receiver, &roomId)
+		err := rows.Scan(&id, &sender, &receiver, &roomId, &roomName)
 		if err != nil {
 			return nil, err
 		}
 
-		invitations = append(invitations, model.Invitation{Id: id, Sender: sender, Receiver: receiver, RoomId: roomId})
+		invitations = append(invitations, model.Invitation{Id: id, Sender: sender, Receiver: receiver, RoomId: roomId, RoomName: roomName})
 	}
 
 	return invitations, nil
