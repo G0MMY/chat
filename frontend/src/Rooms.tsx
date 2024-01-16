@@ -34,6 +34,7 @@ export default function Rooms() {
     const { sendMessage, lastMessage } = useWebSocket(`ws://127.0.0.1:8080/ws/rooms/${username}`);
 
     const selectedRoom: Room = useMemo<Room>(() => {
+        console.log(rooms[0])
         if (rooms !== null) {
             return rooms[0];
         }
@@ -170,7 +171,7 @@ export default function Rooms() {
                </div>
             </Modal>
             <div style={{display:"flex"}}>
-                <RoomList rooms={rooms} setOpen={setOpen}/>
+                <RoomList rooms={rooms} setOpen={setOpen} setRooms={setRooms}/>
                 <div className="flexColumn" style={{width:'100%',maxHeight:'100vh', justifyContent:'flex-start'}}>
                     <div style={{width:'100%', height:'55px', borderBottom:'1px solid black',display:'flex', justifyContent:'flex-end'}}>
                         <h4 style={{marginRight:'40px', cursor:'pointer'}}>

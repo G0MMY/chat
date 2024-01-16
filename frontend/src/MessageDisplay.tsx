@@ -11,7 +11,7 @@ export default function MessageDisplay({ message, username }:Props) {
         return (
             <div className="message" style={{display:'flex',alignItems:'center',marginRight:'30px',width:'100%',justifyContent:'flex-end'}}>
                 <div className="hide">
-                    {message.sendTime}
+                    {new Date(message.sendTime).toLocaleString()}
                 </div>
                 <div style={{borderRadius:'25px',margin:'10px',backgroundColor:'#e8d017',padding:'15px',maxWidth:'75%'}}>
                     {message.msg}
@@ -29,7 +29,7 @@ export default function MessageDisplay({ message, username }:Props) {
                 {message.msg}
             </div>
             <div className="hide">
-                {message.sendTime}
+                {new Date(message.sendTime).toLocaleString()}
             </div>
         </div>
     )

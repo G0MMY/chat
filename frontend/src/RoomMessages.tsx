@@ -45,7 +45,7 @@ export default function RoomMessages({ room, token, username, lastMessage }:Prop
 
     useEffect(() => {
         getMessages();
-    }, [])
+    }, [room])
 
     useEffect(() => {
         const messageList = document.getElementById("messageList")!;
