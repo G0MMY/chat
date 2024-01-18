@@ -31,10 +31,11 @@ export default function Rooms() {
     const [roomName, setRoomName] = useState('');
     const [rooms, setRooms] = useState<Room[]>([]);
     const [invitations, setinvitations] = useState<Invitation[]>([]);
-    const { sendMessage, lastMessage } = useWebSocket(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+    const [socketUrl, setSocketUrl] = useState(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+    const { sendMessage, lastMessage } = useWebSocket(socketUrl);
 
     const selectedRoom: Room = useMemo<Room>(() => {
-        console.log(rooms[0])
+        console.log(rooms)
         if (rooms !== null) {
             return rooms[0];
         }
@@ -69,6 +70,28 @@ export default function Rooms() {
         });
     }
 
+    const getinvitations = (currentToken?: string) => {
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Token": currentToken? currentToken : token
+            }
+        };
+        fetch(`/invitations/${username}`, requestOptions).then((resp) => {
+            if (resp.ok) {
+                return resp.json();
+            }
+            return resp.text().then(text => { throw new Error(text) })
+        }).then((data) => {
+            setError(false);
+            setinvitations(data.items !== null? data.items : []);
+        }).catch((err: Error) => {
+            setError(true);
+            setErrorMessage(err.message);
+        });
+    }
+
     const createRoom = () => {
         const requestOptions = {
             method: "POST",
@@ -87,7 +110,7 @@ export default function Rooms() {
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
             setError(false);
-            joinRoom(data.id)
+            joinRoom(data.id);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -113,11 +136,13 @@ export default function Rooms() {
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
             setError(false);
-            const temp = rooms;
-            temp.push(data)
-            setRooms(temp);
+            setRooms((prev) => (prev.concat(data)));
             setOpen(false);
             setRoomName('');
+            setSocketUrl('');
+            setTimeout(()=>{
+                setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+            }, 10)
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -150,6 +175,7 @@ export default function Rooms() {
                     navigate("/");
                 } else {
                     getRooms(tempToken);
+                    getinvitations(tempToken);
                 }
             })
         } else {

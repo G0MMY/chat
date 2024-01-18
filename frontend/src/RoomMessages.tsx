@@ -54,7 +54,7 @@ export default function RoomMessages({ room, token, username, lastMessage }:Prop
 
     useEffect(() => {
         if (lastMessage !== null) {
-            setMessages((prev)=> prev.concat(JSON.parse(lastMessage.data)));
+            setMessages((prev)=> prev === null? [JSON.parse(lastMessage.data)] : prev.concat(JSON.parse(lastMessage.data)));
         }
     }, [lastMessage])
 

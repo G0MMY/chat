@@ -48,10 +48,12 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 		w.clientRooms[room.Id] = append(w.clientRooms[room.Id], conn)
 	}
 
+	fmt.Println("connected ", conn.LocalAddr())
+	fmt.Println(w.clientRooms)
+
 	for {
 		var msg model.Message
 		err := conn.ReadJSON(&msg)
-		fmt.Println(msg)
 		if err != nil {
 			fmt.Println(err)
 
