@@ -38,15 +38,16 @@ func (s *invitationStore) AddInvitation(invitation *model.Invitation) (*model.In
 		return nil, err
 	}
 
-	var id int
-	query := "INSERT INTO invitations (sender, receiver, room_id) VALUES ($1,$2,(SELECT id from rooms JOIN rooms_users ON id=room_id WHERE username=$3 AND name=$4)) RETURNING id"
+	var id, roomId int
+	query := "INSERT INTO invitations (sender, receiver, room_id) VALUES ($1,$2,(SELECT id from rooms JOIN rooms_users ON id=room_id WHERE username=$3 AND name=$4)) RETURNING id, room_id"
 
-	err := s.connection.conn.QueryRow(context.Background(), query, invitation.Sender, invitation.Receiver, invitation.Sender, invitation.RoomName).Scan(&id)
+	err := s.connection.conn.QueryRow(context.Background(), query, invitation.Sender, invitation.Receiver, invitation.Sender, invitation.RoomName).Scan(&id, &roomId)
 	if err != nil {
 		return nil, err
 	}
 
 	invitation.Id = id
+	invitation.RoomId = roomId
 
 	return invitation, nil
 }

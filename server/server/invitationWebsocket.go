@@ -43,9 +43,8 @@ func (w *websocketInvitationHandler) handleConnections(rw http.ResponseWriter, r
 		var invitation model.Invitation
 		err := conn.ReadJSON(&invitation)
 		if err != nil {
-			rw.Header().Add("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rw).Encode(err.Error())
+			fmt.Println("test")
+			fmt.Println(err)
 
 			delete(w.clientInvitations, username)
 
@@ -54,9 +53,7 @@ func (w *websocketInvitationHandler) handleConnections(rw http.ResponseWriter, r
 
 		_, err = w.invitationStore.AddInvitation(&invitation)
 		if err != nil {
-			rw.Header().Add("Content-Type", "application/json")
-			rw.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rw).Encode(err.Error())
+			fmt.Println(err)
 			return
 		}
 

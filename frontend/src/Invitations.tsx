@@ -5,30 +5,11 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
     invitations: Invitation[]
-    joinRoom: (id: number) => void
-    setInvitations: React.Dispatch<React.SetStateAction<Invitation[]>>
-    token: string
+    joinRoom: (id: number, invitation?: Invitation) => void
+    deleteInvitation: (invitation: Invitation, changeSocket: boolean) => void
 }
 
-export default function Invitations({ invitations, joinRoom, setInvitations, token }: Props) {
-
-    const deleteInvitation = (invitation: Invitation) => {
-        const requestOptions = {
-            method: "DELETE",
-            headers: {
-                "Content-type": "application/json",
-                "Token": token
-            }
-        };
-        fetch(`/invitations/${invitation.id}`, requestOptions).then((resp) => {
-            if (resp.ok) {
-                return resp.json();
-            }
-            return resp.text().then(text => { throw new Error(text) })
-        }).then((data) => {
-            setInvitations((prev) => (prev.splice(prev.indexOf(invitation), 1)))
-        })
-    }
+export default function Invitations({ invitations, joinRoom, deleteInvitation }: Props) {
 
     return (
         <div>
@@ -37,12 +18,9 @@ export default function Invitations({ invitations, joinRoom, setInvitations, tok
                     <ListItem style={{textAlign:'center', borderRadius:'10px', margin: '5px', width:'250px'}} key={invitation.id}>
                         <ListItemText primary={`${invitation.sender} invited you to join the room ${invitation.roomName}`} />
                         <DoneIcon style={{cursor:'pointer',marginLeft:'10px',marginRight:'10px'}} onClick={() => {
-                            joinRoom(invitation.roomId);
-                            setTimeout(() => {
-                                deleteInvitation(invitation);
-                            }, 10)
+                            joinRoom(invitation.roomId, invitation);
                         }} />
-                        <CloseIcon style={{cursor:'pointer'}} onClick={()=>{deleteInvitation(invitation)}}/>
+                        <CloseIcon style={{cursor:'pointer'}} onClick={()=>{deleteInvitation(invitation, false)}}/>
                     </ListItem>
                 )): <></>}  
             </List>

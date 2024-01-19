@@ -35,12 +35,12 @@ export default function Rooms() {
     const [roomName, setRoomName] = useState('');
     const [usernameInvitation, setUsernameInvitation] = useState('');
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [invitations, setinvitations] = useState<Invitation[]>([]);
+    const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [socketUrl, setSocketUrl] = useState(`ws://127.0.0.1:8080/ws/rooms/${username}`);
-    const { sendMessage, lastMessage } = useWebSocket(socketUrl);
+    const roomsWebsocket = useWebSocket(socketUrl);
+    const invitationsWebsocket = useWebSocket(`ws://127.0.0.1:8080/ws/invitations/${username}`);
 
     const selectedRoom: Room = useMemo<Room>(() => {
-        console.log(rooms)
         if (rooms !== null) {
             return rooms[0];
         }
@@ -69,14 +69,14 @@ export default function Rooms() {
         }).then((data) => {
             setError(false);
             setRooms(data.items !== null? data.items : []);
-            getinvitations(currentToken);
+            getInvitations(currentToken);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
         });
     }
 
-    const getinvitations = (currentToken?: string) => {
+    const getInvitations = (currentToken?: string) => {
         const requestOptions = {
             method: "GET",
             headers: {
@@ -90,9 +90,8 @@ export default function Rooms() {
             }
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
-            console.log(data)
             setError(false);
-            setinvitations(data !== null? data : []);
+            setInvitations(data !== null? data : []);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -100,30 +99,17 @@ export default function Rooms() {
     }
 
     const createInvitation = () => {
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-type": "application/json",
-                "Token": token
-            },
-            body: JSON.stringify({
-                sender: username,
-                receiver: usernameInvitation,
-                roomName: roomName
-            })
-        };
-        fetch('/invitations', requestOptions).then((resp) => {
-            if (resp.ok) {
-                return resp.json();
-            }
-            return resp.text().then(text => { throw new Error(text) })
-        }).then((data) => {
-            setError(false);
-            setOpenInvitations(false);
-        }).catch((err: Error) => {
-            setError(true);
-            setErrorMessage(err.message);
-        });
+        console.log(JSON.stringify({
+            sender: username,
+            receiver: usernameInvitation,
+            roomName: roomName
+        }))
+        invitationsWebsocket.sendMessage(JSON.stringify({
+            sender: username,
+            receiver: usernameInvitation,
+            roomName: roomName
+        }));
+        setOpenInvitations(false);
     }
 
     const createRoom = () => {
@@ -151,7 +137,28 @@ export default function Rooms() {
         });
     }
 
-    const joinRoom = (id: number) => {
+    const deleteInvitation = (invitation: Invitation, changeSocket: boolean) => {
+        const requestOptions = {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json",
+                "Token": token
+            }
+        };
+        fetch(`/invitations/${invitation.id}`, requestOptions).then((resp) => {
+            if (resp.ok) {
+                return resp.json();
+            }
+            return resp.text().then(text => { throw new Error(text) })
+        }).then((data) => {
+            setInvitations((prev) => (prev.splice(prev.indexOf(invitation), 1)));
+            if (changeSocket) {
+                setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+            }
+        })
+    }
+
+    const joinRoom = (id: number, invitation?: Invitation) => {
         const requestOptions = {
             method: "POST",
             headers: {
@@ -175,7 +182,11 @@ export default function Rooms() {
             setRoomName('');
             setSocketUrl('');
             setTimeout(()=>{
-                setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+                if (invitation !== undefined) {
+                    deleteInvitation(invitation, true);
+                } else {
+                    setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
+                }
             }, 10)
         }).catch((err: Error) => {
             setError(true);
@@ -185,7 +196,7 @@ export default function Rooms() {
 
     const handleSendClick = () => {
         if (message !== '') {
-            sendMessage(JSON.stringify({
+            roomsWebsocket.sendMessage(JSON.stringify({
                 roomId: selectedRoom.id,
                 sender: username,
                 sendTime: Date.now(),
@@ -199,6 +210,12 @@ export default function Rooms() {
     const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setMessage(e.target.value);
     }
+
+    useEffect(() => {
+        if (invitationsWebsocket.lastMessage !== null) {
+            setInvitations((prev)=> prev === null? [JSON.parse(invitationsWebsocket.lastMessage!.data)] : prev.concat(JSON.parse(invitationsWebsocket.lastMessage!.data)));
+        }
+    }, [invitationsWebsocket.lastMessage])
 
     useEffect(() => {
         const tempToken = sessionStorage.getItem('Token');
@@ -245,7 +262,7 @@ export default function Rooms() {
                             }}/>
                             <Button style={{marginTop:'20px'}} variant='contained' onClick={createInvitation}>Create Invitation</Button>
                         </div> : 
-                        <Invitations token={token} invitations={invitations} joinRoom={joinRoom} setInvitations={setinvitations}/>
+                        <Invitations invitations={invitations} joinRoom={joinRoom} deleteInvitation={deleteInvitation}/>
                     }
                </div>
             </Modal>
@@ -260,7 +277,7 @@ export default function Rooms() {
                             Logout
                         </h4>
                     </div>
-                    {selectedRoom !== undefined? <RoomMessages lastMessage={lastMessage} room={selectedRoom} token={token} username={username}/>:<></>}
+                    {selectedRoom !== undefined? <RoomMessages lastMessage={roomsWebsocket.lastMessage} room={selectedRoom} token={token} username={username}/>:<></>}
                     <div style={{display:'flex',alignItems:'center', width:'100%',marginTop:'auto'}}>
                         <div style={{margin:'5px',marginLeft:'20px',width:'100%'}}>
                             <TextField value={message} onChange={(e) => handleMessageChange(e)} fullWidth multiline label="Message" />
