@@ -49,7 +49,6 @@ func (w *websocketRoomHandler) handleConnections(rw http.ResponseWriter, r *http
 	}
 
 	fmt.Println("connected ", conn.LocalAddr())
-	fmt.Println(w.clientRooms)
 
 	for {
 		var msg model.Message

@@ -10,6 +10,7 @@ import (
 type InvitationStorable interface {
 	AddInvitation(invitation *model.Invitation) (*model.Invitation, error)
 	GetInvitationsOfUser(username string) ([]model.Invitation, error)
+	DeleteInvitation(id string) error
 }
 
 type invitationStore struct {
@@ -21,15 +22,26 @@ func NewInvitationStore(connection *Connection) InvitationStorable {
 	return &invitationStore{connection: connection, validate: validator.New()}
 }
 
+func (s *invitationStore) DeleteInvitation(id string) error {
+	query := "DELETE FROM invitations where id=$1"
+
+	_, err := s.connection.conn.Query(context.Background(), query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *invitationStore) AddInvitation(invitation *model.Invitation) (*model.Invitation, error) {
 	if err := s.validate.Struct(invitation); err != nil {
 		return nil, err
 	}
 
 	var id int
-	query := "INSERT INTO invitations (sender, receiver, room_id) VALUES ($1,$2,$3) RETURNING id"
+	query := "INSERT INTO invitations (sender, receiver, room_id) VALUES ($1,$2,(SELECT id from rooms JOIN rooms_users ON id=room_id WHERE username=$3 AND name=$4)) RETURNING id"
 
-	err := s.connection.conn.QueryRow(context.Background(), query, invitation.Sender, invitation.Receiver, invitation.RoomId).Scan(&id)
+	err := s.connection.conn.QueryRow(context.Background(), query, invitation.Sender, invitation.Receiver, invitation.Sender, invitation.RoomName).Scan(&id)
 	if err != nil {
 		return nil, err
 	}

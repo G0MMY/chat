@@ -57,6 +57,7 @@ func CreateRoutes(conn *persistence.Connection) (*mux.Router, websocketRoomHandl
 
 	// invitation routes
 	invitationRouter.HandleFunc("", invitationHandler.AddInvitation).Methods(http.MethodPost)
+	invitationRouter.HandleFunc("/{id}", invitationHandler.DeleteInvitation).Methods(http.MethodDelete)
 	invitationRouter.HandleFunc("/{username}", invitationHandler.GetInvitationsOfUser).Methods(http.MethodGet)
 
 	// message routes

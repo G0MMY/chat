@@ -4,13 +4,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import RoomList from "./RoomList";
 import RoomMessages from "./RoomMessages";
 import useWebSocket from "react-use-websocket";
+import Invitations from "./Invitations";
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 export interface Room {
     id: number
     name: string
 }
 
-interface Invitation {
+export interface Invitation {
     id: number,
     sender: string,
     receiver: string,
@@ -21,7 +23,9 @@ interface Invitation {
 export default function Rooms() {
 
     const [message, setMessage] = useState('');
-    const [open, setOpen] = useState(false);
+    const [openCreateRoom, setOpenCreateRoom] = useState(false);
+    const [openInvitations, setOpenInvitations] = useState(false);
+    const [addInvitation, setAddInvitation] = useState(false);
     const [token, setToken] = useState('');
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -29,6 +33,7 @@ export default function Rooms() {
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [roomName, setRoomName] = useState('');
+    const [usernameInvitation, setUsernameInvitation] = useState('');
     const [rooms, setRooms] = useState<Room[]>([]);
     const [invitations, setinvitations] = useState<Invitation[]>([]);
     const [socketUrl, setSocketUrl] = useState(`ws://127.0.0.1:8080/ws/rooms/${username}`);
@@ -64,6 +69,7 @@ export default function Rooms() {
         }).then((data) => {
             setError(false);
             setRooms(data.items !== null? data.items : []);
+            getinvitations(currentToken);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -84,8 +90,36 @@ export default function Rooms() {
             }
             return resp.text().then(text => { throw new Error(text) })
         }).then((data) => {
+            console.log(data)
             setError(false);
-            setinvitations(data.items !== null? data.items : []);
+            setinvitations(data !== null? data : []);
+        }).catch((err: Error) => {
+            setError(true);
+            setErrorMessage(err.message);
+        });
+    }
+
+    const createInvitation = () => {
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json",
+                "Token": token
+            },
+            body: JSON.stringify({
+                sender: username,
+                receiver: usernameInvitation,
+                roomName: roomName
+            })
+        };
+        fetch('/invitations', requestOptions).then((resp) => {
+            if (resp.ok) {
+                return resp.json();
+            }
+            return resp.text().then(text => { throw new Error(text) })
+        }).then((data) => {
+            setError(false);
+            setOpenInvitations(false);
         }).catch((err: Error) => {
             setError(true);
             setErrorMessage(err.message);
@@ -137,7 +171,7 @@ export default function Rooms() {
         }).then((data) => {
             setError(false);
             setRooms((prev) => (prev.concat(data)));
-            setOpen(false);
+            setOpenCreateRoom(false);
             setRoomName('');
             setSocketUrl('');
             setTimeout(()=>{
@@ -175,7 +209,6 @@ export default function Rooms() {
                     navigate("/");
                 } else {
                     getRooms(tempToken);
-                    getinvitations(tempToken);
                 }
             })
         } else {
@@ -185,7 +218,7 @@ export default function Rooms() {
 
     return (
         <>
-            <Modal open={open} onClose={()=>{setOpen(false)}}>
+            <Modal open={openCreateRoom} onClose={()=>{setOpenCreateRoom(false)}}>
                <div className="centerDiv" style={{padding: '40px', backgroundColor: 'white', textAlign:'center'}}>
                     <h1 style={{marginBottom:'60px'}}>Create a new room</h1>
                     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
@@ -196,12 +229,32 @@ export default function Rooms() {
                     </div>
                </div>
             </Modal>
+            <Modal open={openInvitations} onClose={()=>{setOpenInvitations(false)}}>
+               <div className="centerDiv" style={{padding: '40px', backgroundColor: 'white',alignItems:'flex-start'}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <h1 style={{marginRight:'60px'}}>Invitations</h1>
+                        <div style={{cursor:'pointer'}} onClick={()=>{setAddInvitation(true)}} ><AddBoxIcon/></div>
+                    </div>
+                    {addInvitation? 
+                        <div style={{display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center',marginTop:'20px'}}>
+                            <TextField label='Room Name' error={error} helperText={error? 'Invalid Name': 'Enter the room name'} onChange={(e)=> {
+                                setRoomName(e.currentTarget.value);
+                            }}/>
+                            <TextField label='Username' error={error} helperText={error? 'Invalid Username': 'Enter the username'} onChange={(e)=> {
+                                setUsernameInvitation(e.currentTarget.value);
+                            }}/>
+                            <Button style={{marginTop:'20px'}} variant='contained' onClick={createInvitation}>Create Invitation</Button>
+                        </div> : 
+                        <Invitations token={token} invitations={invitations} joinRoom={joinRoom} setInvitations={setinvitations}/>
+                    }
+               </div>
+            </Modal>
             <div style={{display:"flex"}}>
-                <RoomList rooms={rooms} setOpen={setOpen} setRooms={setRooms}/>
+                <RoomList rooms={rooms} setOpen={setOpenCreateRoom} setRooms={setRooms}/>
                 <div className="flexColumn" style={{width:'100%',maxHeight:'100vh', justifyContent:'flex-start'}}>
                     <div style={{width:'100%', height:'55px', borderBottom:'1px solid black',display:'flex', justifyContent:'flex-end'}}>
-                        <h4 style={{marginRight:'40px', cursor:'pointer'}}>
-                            Invitations {invitations.length === 0? '':invitations.length}
+                        <h4 style={{marginRight:'40px', cursor:'pointer', display:'flex'}} onClick={()=>{setOpenInvitations(true)}}>
+                            Invitations &nbsp; <div style={{color:'red'}}>{invitations.length === 0? '':invitations.length}</div>
                         </h4>
                         <h4 style={{marginRight:'40px', cursor:'pointer'}} onClick={logoutClick}>
                             Logout

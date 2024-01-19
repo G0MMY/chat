@@ -45,6 +45,35 @@ func (h *invitationHandler) AddInvitation(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(invitation)
 }
 
+func (h *invitationHandler) DeleteInvitation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("invalid username provided")
+		return
+	}
+
+	err := h.store.DeleteInvitation(id)
+	if err != nil {
+		if err, ok := err.(*pgconn.PgError); ok && err.Code == "23505" {
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusConflict)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode("deleted successfully")
+}
+
 func (h *invitationHandler) GetInvitationsOfUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
