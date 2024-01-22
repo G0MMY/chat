@@ -66,6 +66,8 @@ func (s *roomStore) GetUserRooms(username string) (*model.Rooms, error) {
 		rooms.Items = append(rooms.Items, model.Room{Id: id, Name: name})
 	}
 
+	rows.Close()
+
 	return &rooms, nil
 }
 
@@ -92,6 +94,8 @@ func (s *roomStore) GetRoomUsers(id string) (*model.Usernames, error) {
 
 		usernames.Items = append(usernames.Items, name)
 	}
+
+	rows.Close()
 
 	return &usernames, nil
 }

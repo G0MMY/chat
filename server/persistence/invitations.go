@@ -25,10 +25,12 @@ func NewInvitationStore(connection *Connection) InvitationStorable {
 func (s *invitationStore) DeleteInvitation(id string) error {
 	query := "DELETE FROM invitations where id=$1"
 
-	_, err := s.connection.conn.Query(context.Background(), query, id)
+	rows, err := s.connection.conn.Query(context.Background(), query, id)
 	if err != nil {
 		return err
 	}
+
+	rows.Close()
 
 	return nil
 }
@@ -76,6 +78,8 @@ func (s *invitationStore) GetInvitationsOfUser(username string) ([]model.Invitat
 
 		invitations = append(invitations, model.Invitation{Id: id, Sender: sender, Receiver: receiver, RoomId: roomId, RoomName: roomName})
 	}
+
+	rows.Close()
 
 	return invitations, nil
 }

@@ -99,11 +99,6 @@ export default function Rooms() {
     }
 
     const createInvitation = () => {
-        console.log(JSON.stringify({
-            sender: username,
-            receiver: usernameInvitation,
-            roomName: roomName
-        }))
         invitationsWebsocket.sendMessage(JSON.stringify({
             sender: username,
             receiver: usernameInvitation,
@@ -137,7 +132,7 @@ export default function Rooms() {
         });
     }
 
-    const deleteInvitation = (invitation: Invitation, changeSocket: boolean) => {
+    const deleteInvitation = (invitation: Invitation) => {
         const requestOptions = {
             method: "DELETE",
             headers: {
@@ -150,11 +145,8 @@ export default function Rooms() {
                 return resp.json();
             }
             return resp.text().then(text => { throw new Error(text) })
-        }).then((data) => {
-            setInvitations((prev) => (prev.splice(prev.indexOf(invitation), 1)));
-            if (changeSocket) {
-                setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
-            }
+        }).then(() => {
+            setInvitations(invitations.filter(currentInvitation => currentInvitation.id !== invitation.id));
         })
     }
 
@@ -181,12 +173,11 @@ export default function Rooms() {
             setOpenCreateRoom(false);
             setRoomName('');
             setSocketUrl('');
+            if (invitation !== undefined) {
+                deleteInvitation(invitation);
+            } 
             setTimeout(()=>{
-                if (invitation !== undefined) {
-                    deleteInvitation(invitation, true);
-                } else {
-                    setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
-                }
+                setSocketUrl(`ws://127.0.0.1:8080/ws/rooms/${username}`);
             }, 10)
         }).catch((err: Error) => {
             setError(true);

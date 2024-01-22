@@ -43,7 +43,6 @@ func (w *websocketInvitationHandler) handleConnections(rw http.ResponseWriter, r
 		var invitation model.Invitation
 		err := conn.ReadJSON(&invitation)
 		if err != nil {
-			fmt.Println("test")
 			fmt.Println(err)
 
 			delete(w.clientInvitations, username)

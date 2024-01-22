@@ -66,5 +66,7 @@ func (s *messageStore) GetMessages(roomId string) (*model.Messages, error) {
 		messages.Items = append(messages.Items, model.Message{Id: id, RoomId: roomId, Sender: sender, SendTime: sendTime.Unix(), Msg: msg})
 	}
 
+	rows.Close()
+
 	return &messages, nil
 }
